@@ -55,41 +55,75 @@ rosenbrock <- function(x, y, a = 2, b = 0.2) {
 # 
 # return [[multivariate_normal.logpdf(y, [0, 4], [[1.0*scale, 0.5*scale], [0.5*scale, 1.0*scale]])]]
 
+f_log_pdf <- function(v){
+  cov_matrix <- matrix(c(1, 0.5, 0.5, 1), nrow = 2)
+  val = log(dmvnorm(v, mean = c(0,4), sigma = cov_matrix))
+  val
+}
 
 # Define function to generate samplesd
-get_samples <- function(n=100, a=2, b = 0.2) {
+get_samples <- function(n=10) {
   x_samples <- runif(n, min = -2, max = 2) # Adjust the range as needed
   y_samples <- runif(n, min = 2, max = 6) # Adjust the range as needed
   # Calculate Rosenbrock values
   rosen_values <- mapply(rosenbrock, x_samples, y_samples)
-  cov_matrix <- matrix(c(1, 0.5, 0.5, 1), nrow = 2)
-  log_pdf <- log(dmvnorm(t(rosen_values), mean = c(0,4), sigma = cov_matrix))
+  log_pdf = f_log_pdf(t(rosen_values))
+  # cov_matrix <- matrix(c(1, 0.5, 0.5, 1), nrow = 2)
+  # log_pdf <- log(dmvnorm(t(rosen_values), mean = c(0,4), sigma = cov_matrix))
   df <- data.frame(x = x_samples, y = y_samples, z = log_pdf)  
   df
 }
 
 
 training <- get_samples(n=1000)
-testing <- get_samples(n=30)
+# testing <- get_samples(n=30)
 # Parameters we want to emulate
 output_names <- c('z')
-
 
 # **Train Emulators**: Use the `emulator_from_data` function to train a set of emulators to your data:
 ems <- emulator_from_data(input_data = training,
                           output_names = output_names,
                           ranges = list(x = c(-5, 5), y = c(-5, 5)))
 
-# **Perform Diagnostics**: Run diagnostic checks on the emulators using the `validation_diagnostics` function:
-validation <- validation_diagnostics(ems, training, testing, plt = FALSE)
+# # **Perform Diagnostics**: Run diagnostic checks on the emulators using the `validation_diagnostics` function:
+# validation <- validation_diagnostics(ems, training, testing, plt = FALSE)
 
-# #  **Propose New Points**: Generate new points from the emulators with the `generate_new_design` function:
-new_points <- generate_new_design(ems, 500, training)
+#  **Propose New Points**: Generate new points from the emulators with the `generate_new_design` function:
+new_points <- generate_new_design(ems, 100, training)
+new_points$z <- f_log_pdf(t(mapply(rosenbrock, new_points$x, new_points$y)))
 
 ggplot() + 
   geom_point(data = training, aes(x = x, y = y), color = 'blue') + # First data set in blue
   geom_point(data = new_points, aes(x = x, y = y), color = 'red') + # Second data set in red
   theme_minimal() +
-  labs(title = "Scatter Plot of Two Data Sets",
-       x = "X Axis", y = "Y Axis")
+  labs(title = "Iteration 1", x = "X Axis", y = "Y Axis")
+
+#################################################
+training <- new_points
+ems <- emulator_from_data(input_data = training,
+                          output_names = output_names,
+                          ranges = list(x = c(-5, 5), y = c(-5, 5)))
+new_points <- generate_new_design(ems, 100, training)
+new_points$z <- f_log_pdf(t(mapply(rosenbrock, new_points$x, new_points$y)))
+
+ggplot() + 
+  geom_point(data = training, aes(x = x, y = y), color = 'blue') + # First data set in blue
+  geom_point(data = new_points, aes(x = x, y = y), color = 'red') + # Second data set in red
+  theme_minimal() +
+  labs(title = "Iteration 2", x = "X Axis", y = "Y Axis")
+
+
+#################################################
+training <- new_points
+ems <- emulator_from_data(input_data = training,
+                          output_names = output_names,
+                          ranges = list(x = c(-5, 5), y = c(-5, 5)))
+new_points <- generate_new_design(ems, 100, training)
+new_points$z <- f_log_pdf(t(mapply(rosenbrock, new_points$x, new_points$y)))
+
+ggplot() + 
+  geom_point(data = training, aes(x = x, y = y), color = 'blue') + # First data set in blue
+  geom_point(data = new_points, aes(x = x, y = y), color = 'red') + # Second data set in red
+  theme_minimal() +
+  labs(title = "Iteration 3", x = "X Axis", y = "Y Axis")
 
