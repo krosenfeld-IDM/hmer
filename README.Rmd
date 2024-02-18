@@ -28,6 +28,10 @@ knitr::opts_chunk$set(
 
 The goal of hmer is to make the process of history matching and emulation accessible and easily usable by modellers, particularly in epidemiology. The central object of the process is an `Emulator`: a statistical approximation for the output of a complex (and often expensive) model that, given a relatively small number of model evaluations, can give predictions of the model output at unseen points with the appropriate uncertainty built-in. Using these we may follow a process of 'history matching', where unfeasible parts of the parameter space are ruled out. Sampling parameter sets from the remaining region allows us to train more accurate emulators, which allow us to remove more of the space, and so on. The hmer package contains tools for the automated construction of emulators, visualisations for diagnostic checks and exploration of parameter space, and a means by which new points can be proposed.
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/andy-iskauskas/hmer)
+(To access Rstudio `ctrl`+`shift`+`p` and search for "View: Toggle Ports". For port 8787 choose 
+"open in browser" under "Forwarded Address". Username and password are "rstudio".
+
 ## Installation
 
 You can install the development version of hmer from [GitHub](https://github.com/) with:
